@@ -2,7 +2,7 @@
 
 Auth and profile endpoints exposed under `/api` (see `api/routes/userRoutes.js`).
 
-- `POST /api/users/login` — authenticate, returns JWT and profile basics.
+- `POST /api/users/login` — authenticate, returns JWT and profile basics. Login is authentication only; it should not decide subscription routing. The API reconciles subscription state from Stripe before responding when the user has Stripe IDs.
 - `POST /api/users` — register; sends verification email via `MAILER_LOCAL_URL`.
 - `GET /api/users/profile` — current user profile (auth required).
 - `PUT /api/users/profile` — update current user profile (auth required).
@@ -35,3 +35,11 @@ Reviewer Accounts:
 - `POST /api/users-review/login` — reviewer login.
 - `GET /api/reviewer/public/:id` — public reviewer by id.
 - Admin: `GET /api/reviewers/admin/:id` (all reviewers), `DELETE /api/reviewer/admin/:id` (delete reviewer).
+
+## Subscription / Checkout Notes
+
+- `POST /api/checkout-session` creates a Stripe hosted checkout session and returns only `{ url }`.
+- `GET /api/checkout-session/:sessionId` verifies Stripe checkout success, syncs subscription state, and returns the tokenized user payload used by `/subscribe/success`.
+- `GET /api/users/profile` also reconciles subscription state from Stripe when possible.
+- Paid-action authorization is enforced by backend subscription middleware; login itself should not redirect to `/subscribe`.
+- See `subscription-login-checkout-handoff.md` for the current regression handoff and recovery details.

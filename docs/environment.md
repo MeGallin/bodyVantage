@@ -11,6 +11,10 @@ API (`api/.env`):
 - `MAILER_LOCAL_URL` — API origin for verification links (e.g., `https://api-cllf.onrender.com/`)
 - `RESET_PASSWORD_LOCAL_URL` — frontend origin for password reset links (e.g., `http://localhost:5173` for dev, `https://bodyvantage.co.uk` for prod)
 - `FRONTEND_URL` — allowed CORS origin for the deployed frontend (e.g., `https://bodyvantage.co.uk`)
+- `STRIPE_SECRET_KEY` — Stripe secret key used for checkout creation, checkout-session verification, and subscription reconciliation
+- `STRIPE_WEBHOOK_SECRET` — Stripe webhook signing secret for `/api/stripe/webhook`
+- `STRIPE_PRICE_MONTHLY` — Stripe monthly subscription price id (`price_...`)
+- `STRIPE_PRICE_ANNUAL` — Stripe annual subscription price id (`price_...`)
 - `PORT`, `NODE_ENV` — usual runtime settings
 - `CLOUDINARY_*` — media storage creds
 - `OPENAI_API_KEY` — OpenAI API key for AI profile draft generation
@@ -19,3 +23,10 @@ API (`api/.env`):
 - `AI_PROFILE_DRAFT_ENABLED` — set to `true` to enable the AI profile draft endpoint
 - `AI_PROFILE_DRAFT_MAX_INPUT_CHARS` — optional natural-language input limit (defaults to `4000`)
 - `AI_PROFILE_DRAFT_RATE_LIMIT_PER_HOUR` — optional per-user draft limit (defaults to `5`)
+
+Subscription/login continuation notes:
+
+- See `docs/subscription-login-checkout-handoff.md`.
+- Login is authentication only and should not redirect to `/subscribe`.
+- Checkout success uses `GET /api/checkout-session/:sessionId` to verify Stripe and hydrate login state after payment.
+- Stripe reconciliation needs `stripeCustomerId` or `stripeSubscriptionId` on the Mongo user. Historic paid users missing both fields require audit/backfill.
